@@ -54,7 +54,7 @@ using namespace cv;
 Point point1, point2; /* vertical points of the bounding box */
 int isDragging = 0;
 int isRoiSelected = 0;
-int REC_LINE_WIDTH = 3;
+int REC_LINE_WIDTH = 2;
 Rect roiRect; /* bounding box */
 Mat img, roiImg; /* roiImg - the part of the image in the bounding box */
 
