@@ -56,10 +56,14 @@ int isRoiSelected = 0;
 int REC_LINE_WIDTH = 2;
 char* WTITLE_SOURCE_IMAGE = "Source Image";
 char* WTITLE_ROI_IMAGE = "ROI Image";
+char* WTITLE_ROI_IMAGE_THRESHOLDED = "ROI Image Thresholded";
 Point point1, point2; /* vertical points of the bounding box */
 Rect roiRect; /* bounding box */
-Mat img, roiImg; /* roiImg - the part of the image in the bounding box */
+Mat img, roiImg, roiImgGray, roiImgThresholded; /* roiImg - the part of the image in the bounding box */
 
+/*
+ Helper functions
+ */
 void mouseDragHandler(int event, int x, int y, int flags, void* param)
 {
     if (event == CV_EVENT_LBUTTONDOWN && !isDragging)
@@ -94,6 +98,17 @@ void mouseDragHandler(int event, int x, int y, int flags, void* param)
         /* ROI selected */
         isDragging = 0;
         isRoiSelected = 1;
+    }
+}
+
+
+void waitForEscKey()
+{
+    int key;
+    while (1)
+    {
+        key = waitKey(10);
+        if (key == 27) break;
     }
 }
 
@@ -134,8 +149,10 @@ void roiSelection()
 
 void candidatePointsExtraction()
 {
-    cout << "TODO XIN candidate points extraction" << endl;
-    cout << endl;
+    cvtColor(roiImg, roiImgGray, CV_BGR2GRAY);
+    threshold(roiImgGray, roiImgThresholded, 127, 255, CV_THRESH_BINARY_INV);
+    imshow(WTITLE_ROI_IMAGE_THRESHOLDED, roiImgThresholded);
+    waitForEscKey();
 }
 
 int main()
