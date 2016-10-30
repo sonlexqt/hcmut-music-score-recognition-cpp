@@ -54,6 +54,7 @@ using namespace cv;
 Point point1, point2; /* vertical points of the bounding box */
 int isDragging = 0;
 int isRoiSelected = 0;
+int REC_LINE_WIDTH = 3;
 Rect roiRect; /* bounding box */
 Mat img, roiImg; /* roiImg - the part of the image in the bounding box */
 
@@ -71,14 +72,17 @@ void mouseHandler(int event, int x, int y, int flags, void* param)
         /* mouse dragged. ROI being selected */
         Mat img1 = img.clone();
         point2 = Point(x, y);
-        rectangle(img1, point1, point2, CV_RGB(255, 0, 0), 3, 8, 0);
+        rectangle(img1, point1, point2, CV_RGB(255, 0, 0), REC_LINE_WIDTH, 8, 0);
         imshow("image", img1);
     }
     
     if (event == CV_EVENT_LBUTTONUP && isDragging)
     {
         point2 = Point(x, y);
-        roiRect = Rect(point1.x,point1.y,x-point1.x,y-point1.y);
+        roiRect = Rect(point1.x + REC_LINE_WIDTH,
+                       point1.y + REC_LINE_WIDTH,
+                       x - point1.x - REC_LINE_WIDTH,
+                       y - point1.y - REC_LINE_WIDTH);
         isDragging = 0;
         roiImg = img(roiRect);
     }
@@ -99,14 +103,12 @@ int main()
         cerr << "ERROR: Image not found." << endl;
         return -1;
     }
-
     imshow("image", img);
     cvSetMouseCallback("image", mouseHandler, NULL);
     while (1)
     {
         if (isRoiSelected == 1)
         {
-            rectangle(img, roiRect, CV_RGB(255, 0, 0), 3, 8, 0);
             imshow("ROI", roiImg); /* show the image bounded by the box */
         }
         k = waitKey(10);
