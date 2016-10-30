@@ -51,14 +51,16 @@ using namespace cv;
 //    return 0;
 //}
 
-Point point1, point2; /* vertical points of the bounding box */
 int isDragging = 0;
 int isRoiSelected = 0;
 int REC_LINE_WIDTH = 2;
+char* WTITLE_SOURCE_IMAGE = "Source Image";
+char* WTITLE_ROI_IMAGE = "ROI Image";
+Point point1, point2; /* vertical points of the bounding box */
 Rect roiRect; /* bounding box */
 Mat img, roiImg; /* roiImg - the part of the image in the bounding box */
 
-void mouseHandler(int event, int x, int y, int flags, void* param)
+void mouseDragHandler(int event, int x, int y, int flags, void* param)
 {
     if (event == CV_EVENT_LBUTTONDOWN && !isDragging)
     {
@@ -73,7 +75,7 @@ void mouseHandler(int event, int x, int y, int flags, void* param)
         Mat img1 = img.clone();
         point2 = Point(x, y);
         rectangle(img1, point1, point2, CV_RGB(255, 0, 0), REC_LINE_WIDTH, 8, 0);
-        imshow("image", img1);
+        imshow(WTITLE_SOURCE_IMAGE, img1);
     }
     
     if (event == CV_EVENT_LBUTTONUP && isDragging)
@@ -95,24 +97,51 @@ void mouseHandler(int event, int x, int y, int flags, void* param)
     }
 }
 
-int main()
+/*
+ Step 1 - Read source image
+ */
+void readSourceImage()
 {
-    int k;
     img = imread("happy-birthday-rotated-white-resized.jpg", 1);
     if (img.empty()) {
-        cerr << "ERROR: Image not found." << endl;
-        return -1;
+        throw invalid_argument("ERROR: Image not found.");
+        return;
     }
-    imshow("image", img);
-    cvSetMouseCallback("image", mouseHandler, NULL);
+    imshow(WTITLE_SOURCE_IMAGE, img);
+}
+
+/*
+ Step 2 - ROI selection
+ */
+void roiSelection()
+{
+    int key;
+    cvSetMouseCallback(WTITLE_SOURCE_IMAGE, mouseDragHandler, NULL);
     while (1)
     {
         if (isRoiSelected == 1)
         {
-            imshow("ROI", roiImg); /* show the image bounded by the box */
+            imshow(WTITLE_ROI_IMAGE, roiImg); /* show the image bounded by the box */
         }
-        k = waitKey(10);
-        if (k == 27) break;
+        key = waitKey(10);
+        if (key == 27) break;
     }
+}
+
+/*
+ Step 3 - Candidate points extraction
+ */
+
+void candidatePointsExtraction()
+{
+    cout << "TODO XIN candidate points extraction" << endl;
+    cout << endl;
+}
+
+int main()
+{
+    readSourceImage();
+    roiSelection();
+    candidatePointsExtraction();
     return 0;
 }
