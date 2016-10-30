@@ -25,7 +25,7 @@ Rect roiRect; /* bounding box */
 Mat img,
     roiImg,
     roiImgGray,
-    roiImgThresholded;
+    roiImgThresholded, blankRoiImg;
 
 /*
  Helper functions
@@ -133,7 +133,7 @@ void candidatePointsExtraction()
     cvtColor(roiImg, roiImgGray, CV_BGR2GRAY);
     threshold(roiImgGray, roiImgThresholded, 127, 255, CV_THRESH_BINARY_INV);
     imshow(WTITLE_ROI_IMAGE_THRESHOLDED, roiImgThresholded);
-    Mat blankRoiImg(roiImgThresholded.size(), CV_8U);
+    blankRoiImg = Mat(roiImgThresholded.size(), CV_8U);
     for (int i = 0; i < roiImgThresholded.rows; i++)
         for (int j = 0; j < roiImgThresholded.cols; j++)
         {
@@ -149,10 +149,19 @@ void candidatePointsExtraction()
     waitForEscKey();
 }
 
+/*
+ Step 4 - Rotation angle estimation
+ */
+
+void rotationAngleEstimation()
+{
+    cout << "rotationAngleEstimation" << endl;
+}
 int main()
 {
     readSourceImage();
     roiSelection();
     candidatePointsExtraction();
+    rotationAngleEstimation();
     return 0;
 }
