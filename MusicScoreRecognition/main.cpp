@@ -214,7 +214,7 @@ void rotationAngleEstimation()
     cout << "> Estimated rotation angle (deg): " << minAngle << endl;
     Point2f center = Point2f(img.cols / 2., img.rows / 2.);
     Mat rotationMatrix = getRotationMatrix2D(center, minAngle, 1.0);
-    warpAffine(img, rotatedImg, rotationMatrix, img.size());
+    warpAffine(img, rotatedImg, rotationMatrix, img.size(), INTER_LINEAR, BORDER_CONSTANT, Scalar(255, 255, 255));
     imshow(WTITLE_ROTATED_IMAGE, rotatedImg);
     waitKey(0);
 }
