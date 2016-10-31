@@ -31,7 +31,8 @@ Mat img,
     roiImgGray,
     roiImgThresholded,
     blankRoiImg,
-    rotatedImg;
+    rotatedImg,
+    rotatedImgThresholded;
 int MAX_ROTATION_ANGLE = 30;
 int MIN_ROTATION_ANGLE = - MAX_ROTATION_ANGLE;
 
@@ -214,6 +215,7 @@ void rotationAngleEstimation()
     cout << "> Estimated rotation angle (deg): " << minAngle << endl;
     Point2f center = Point2f(img.cols / 2., img.rows / 2.);
     Mat rotationMatrix = getRotationMatrix2D(center, minAngle, 1.0);
+    // Maintain white background when using opencv warpAffine
     warpAffine(img, rotatedImg, rotationMatrix, img.size(), INTER_LINEAR, BORDER_CONSTANT, Scalar(255, 255, 255));
     imshow(WTITLE_ROTATED_IMAGE, rotatedImg);
     waitKey(0);
@@ -225,7 +227,56 @@ void rotationAngleEstimation()
 
 void adaptiveRemoval()
 {
-    
+    int width = rotatedImg.cols;
+    int height = rotatedImg.rows;
+    float Pthetas[height];
+    // Convert rotatedImg to rotatedImgThresholded
+    cvtColor(rotatedImg, rotatedImg, CV_BGR2GRAY);
+    threshold(rotatedImg, rotatedImgThresholded, 127, 255, CV_THRESH_BINARY_INV);
+    // Calculate horizontal projection
+    for (int h = 0; h < height; h++)
+    {
+        float sumOfRows = 0;
+        for (int w = 0; w < width; w++)
+        {
+            sumOfRows += rotatedImgThresholded.at<uchar>(h, w);
+        }
+        Pthetas[h] = sumOfRows;
+    }
+    // Get the maximum of the projection (T)
+    float T = Pthetas[0];
+    for (int h = 0; h < height; h++)
+    {
+        if (Pthetas[h] > T) T = Pthetas[h];
+    }
+    // Then the projection is binarized using a threshold of half of the maximum
+    for (int h = 0; h < height; h++)
+    {
+        // TODO XIN currently using a hardcoded number 4 here
+        if (Pthetas[h] > (T / 4)) Pthetas[h] = 255;
+        else Pthetas[h] = 0;
+    }
+    // Estimate the staff line width
+    float W = 0;
+    int numberOfRows = 0;
+    int numberOfLines = 0;
+    for (int h = 0; h < height; h++)
+    {
+        if (Pthetas[h] == 255)
+        {
+            numberOfRows += 1;
+            if (h >= 1 && Pthetas[h - 1] != 255)
+            {
+                // Count this case as a new line
+                numberOfLines += 1;
+            }
+        }
+    }
+    W = numberOfRows / numberOfLines;
+    // Z is the number of times we need to run the staff line removal method
+    int Z = ceil(W / 2);
+    // TODO XIN next, do method [8] Z times
+    // TODO XIN
 }
 
 /************************************
