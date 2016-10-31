@@ -13,6 +13,9 @@
 using namespace std;
 using namespace cv;
 
+/************************************
+ Global variables declaration
+ ************************************/
 int isDragging = 0;
 int isRoiSelected = 0;
 int REC_LINE_WIDTH = 2;
@@ -27,7 +30,8 @@ Mat img,
     roiImg,
     roiImgGray,
     roiImgThresholded,
-    blankRoiImg;
+    blankRoiImg,
+    rotatedImg;
 int MAX_ROTATION_ANGLE = 30;
 int MIN_ROTATION_ANGLE = - MAX_ROTATION_ANGLE;
 
@@ -140,7 +144,7 @@ void candidatePointsExtraction()
 {
     cvtColor(roiImg, roiImgGray, CV_BGR2GRAY);
     threshold(roiImgGray, roiImgThresholded, 127, 255, CV_THRESH_BINARY_INV);
-    imshow(WTITLE_ROI_IMAGE_THRESHOLDED, roiImgThresholded);
+    //imshow(WTITLE_ROI_IMAGE_THRESHOLDED, roiImgThresholded);
     blankRoiImg = Mat(roiImgThresholded.size(), CV_8U);
     for (int i = 0; i < roiImgThresholded.rows; i++)
         for (int j = 0; j < roiImgThresholded.cols; j++)
@@ -167,7 +171,7 @@ void rotationAngleEstimation()
     int height = blankRoiImg.rows;
     int entropyPsLength = MAX_ROTATION_ANGLE - MIN_ROTATION_ANGLE + 1;
     float entropyPs[entropyPsLength];
-    Mat rotatedImg;
+    Mat rotatedRoiImg;
     for (int a = 0; a < entropyPsLength; a++)
     {
         float Pthetas[height];
@@ -176,14 +180,14 @@ void rotationAngleEstimation()
         int angle = a - MAX_ROTATION_ANGLE;
         Point2f center = Point2f(blankRoiImg.cols / 2., blankRoiImg.rows / 2.);
         Mat rotationMatrix = cv::getRotationMatrix2D(center, angle, 1.0);
-        warpAffine(blankRoiImg, rotatedImg, rotationMatrix, blankRoiImg.size());
-        // The next calculation will use rotatedImg instead
+        warpAffine(blankRoiImg, rotatedRoiImg, rotationMatrix, blankRoiImg.size());
+        // The next calculation will use rotatedRoiImg instead
         for (int h = 0; h < height; h++)
         {
             float sumOfRows = 0;
             for (int w = 0; w < width; w++)
             {
-                sumOfRows += rotatedImg.at<uchar>(h, w);
+                sumOfRows += rotatedRoiImg.at<uchar>(h, w);
             }
             Pthetas[h] = sumOfRows;
             sumPthetas += Pthetas[h];
@@ -208,11 +212,20 @@ void rotationAngleEstimation()
         }
     }
     cout << "> Estimated rotation angle (deg): " << minAngle << endl;
-    Point2f center = Point2f(blankRoiImg.cols / 2., blankRoiImg.rows / 2.);
+    Point2f center = Point2f(img.cols / 2., img.rows / 2.);
     Mat rotationMatrix = getRotationMatrix2D(center, minAngle, 1.0);
-    warpAffine(blankRoiImg, rotatedImg, rotationMatrix, blankRoiImg.size());
+    warpAffine(img, rotatedImg, rotationMatrix, img.size());
     imshow(WTITLE_ROTATED_IMAGE, rotatedImg);
     waitKey(0);
+}
+
+/*
+ Step 5 - Adaptive removal
+ */
+
+void adaptiveRemoval()
+{
+    
 }
 
 /************************************
@@ -224,5 +237,6 @@ int main()
     roiSelection();
     candidatePointsExtraction();
     rotationAngleEstimation();
+    adaptiveRemoval();
     return 0;
 }
