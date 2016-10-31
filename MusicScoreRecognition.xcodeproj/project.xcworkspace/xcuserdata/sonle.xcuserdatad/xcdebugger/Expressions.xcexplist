@@ -3,10 +3,32 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "calculateEntropy(float*, int):main.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "log(PthetasAvg[10])">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "candidatePointsExtraction():main.cpp">
          <PersistentStrings>
             <PersistentString
                value = "roiImgThresholded">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "rotationAngleEstimation():main.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "width">
+            </PersistentString>
+            <PersistentString
+               value = "PthetasAvg[30]">
+            </PersistentString>
+            <PersistentString
+               value = "height">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
