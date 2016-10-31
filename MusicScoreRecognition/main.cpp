@@ -32,7 +32,9 @@ Mat img,
     roiImgThresholded,
     blankRoiImg,
     rotatedImg,
-    rotatedImgThresholded;
+    rotatedImgGray,
+    rotatedImgThresholded,
+    blankRotatedImg;
 int MAX_ROTATION_ANGLE = 30;
 int MIN_ROTATION_ANGLE = - MAX_ROTATION_ANGLE;
 
@@ -77,16 +79,18 @@ void mouseDragHandler(int event, int x, int y, int flags, void* param)
     }
 }
 
-bool isThisPixelRemoved(int i, int j, int value, int maxRows, int maxCols)
+// TODO XIN need to optimize this func
+bool isThisPixelRemoved(int i, int j, int value, Mat img)
 {
+    int maxCols = img.cols;
     if (value > 0)
     {
         if (i == 0 || i == 1) return true;
-        if ((int)roiImgThresholded.at<uchar>(i - 1, j) > 0)
+        if ((int)img.at<uchar>(i - 1, j) > 0)
         {
-            if ((int)roiImgThresholded.at<uchar>(i - 2, j) > 0) return false;
-            if (j >= 1 && (int)roiImgThresholded.at<uchar>(i - 2, j - 1) > 0) return false;
-            if (j < maxCols && (int)roiImgThresholded.at<uchar>(i - 2, j + 1) > 0) return false;
+            if ((int)img.at<uchar>(i - 2, j) > 0) return false;
+            if (j >= 1 && (int)img.at<uchar>(i - 2, j - 1) > 0) return false;
+            if (j < maxCols && (int)img.at<uchar>(i - 2, j + 1) > 0) return false;
         }
     }
     return true;
@@ -151,7 +155,7 @@ void candidatePointsExtraction()
         for (int j = 0; j < roiImgThresholded.cols; j++)
         {
             int pixelGrayScaleValue = (int) roiImgThresholded.at<uchar>(i, j);
-            if (isThisPixelRemoved(i, j, pixelGrayScaleValue, roiImgThresholded.rows, roiImgThresholded.cols))
+            if (isThisPixelRemoved(i, j, pixelGrayScaleValue, roiImgThresholded))
             {
                 // Yes: copy this pixel to blankRoiImg
                 blankRoiImg.at<uchar>(i, j) = pixelGrayScaleValue;
@@ -231,8 +235,8 @@ void adaptiveRemoval()
     int height = rotatedImg.rows;
     float Pthetas[height];
     // Convert rotatedImg to rotatedImgThresholded
-    cvtColor(rotatedImg, rotatedImg, CV_BGR2GRAY);
-    threshold(rotatedImg, rotatedImgThresholded, 127, 255, CV_THRESH_BINARY_INV);
+    cvtColor(rotatedImg, rotatedImgGray, CV_BGR2GRAY);
+    threshold(rotatedImgGray, rotatedImgThresholded, 127, 255, CV_THRESH_BINARY_INV);
     // Calculate horizontal projection
     for (int h = 0; h < height; h++)
     {
@@ -275,8 +279,20 @@ void adaptiveRemoval()
     W = numberOfRows / numberOfLines;
     // Z is the number of times we need to run the staff line removal method
     int Z = ceil(W / 2);
-    // TODO XIN next, do method [8] Z times
-    // TODO XIN
+    blankRotatedImg = Mat(rotatedImgThresholded.size(), CV_8U);
+    for (int i = 0; i < rotatedImgThresholded.rows; i++)
+        for (int j = 0; j < rotatedImgThresholded.cols; j++)
+        {
+            int pixelGrayScaleValue = (int) rotatedImgThresholded.at<uchar>(i, j);
+            if (isThisPixelRemoved(i, j, pixelGrayScaleValue, rotatedImgThresholded))
+            {
+                // Yes: copy this pixel to blankRoiImg
+                blankRotatedImg.at<uchar>(i, j) = pixelGrayScaleValue;
+            }
+        }
+    threshold(blankRotatedImg, blankRotatedImg, 127, 255, CV_THRESH_BINARY);
+    imshow("HIC", blankRotatedImg);
+    waitKey(0);
 }
 
 /************************************
