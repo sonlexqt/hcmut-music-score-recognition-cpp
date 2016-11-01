@@ -24,6 +24,7 @@ char* WTITLE_ROI_IMAGE = "ROI Image";
 char* WTITLE_ROI_IMAGE_THRESHOLDED = "ROI Image Thresholded";
 char* WTITLE_CANDIDATE_POINTS = "Candidate Points";
 char* WTITLE_ROTATED_IMAGE = "Rotated image";
+char* WTITLE_IMG_WO_STAFFLINES = "Image without stafflines";
 Point point1, point2; /* vertical points of the bounding box */
 Rect roiRect; /* bounding box */
 Mat img,
@@ -34,7 +35,8 @@ Mat img,
     rotatedImg,
     rotatedImgGray,
     rotatedImgThresholded,
-    blankRotatedImg;
+    blankRotatedImg,
+    withoutStaffLines;
 int MAX_ROTATION_ANGLE = 30;
 int MIN_ROTATION_ANGLE = - MAX_ROTATION_ANGLE;
 
@@ -79,7 +81,6 @@ void mouseDragHandler(int event, int x, int y, int flags, void* param)
     }
 }
 
-// TODO XIN need to optimize this func
 bool isThisPixelRemoved(int i, int j, int value, Mat img)
 {
     int maxCols = img.cols;
@@ -279,19 +280,26 @@ void adaptiveRemoval()
     W = numberOfRows / numberOfLines;
     // Z is the number of times we need to run the staff line removal method
     int Z = ceil(W / 2);
-    blankRotatedImg = Mat(rotatedImgThresholded.size(), CV_8U);
-    for (int i = 0; i < rotatedImgThresholded.rows; i++)
-        for (int j = 0; j < rotatedImgThresholded.cols; j++)
+    withoutStaffLines = rotatedImgThresholded.clone();
+    blankRotatedImg = Mat(withoutStaffLines.size(), CV_8U);
+    for (int z = 0; z < Z; z++)
+    {
+        for (int i = 0; i < withoutStaffLines.rows; i++)
         {
-            int pixelGrayScaleValue = (int) rotatedImgThresholded.at<uchar>(i, j);
-            if (isThisPixelRemoved(i, j, pixelGrayScaleValue, rotatedImgThresholded))
+            for (int j = 0; j < withoutStaffLines.cols; j++)
             {
-                // Yes: copy this pixel to blankRoiImg
-                blankRotatedImg.at<uchar>(i, j) = pixelGrayScaleValue;
+                int pixelGrayScaleValue = (int) withoutStaffLines.at<uchar>(i, j);
+                if (isThisPixelRemoved(i, j, pixelGrayScaleValue, withoutStaffLines))
+                {
+                    // Yes: copy this pixel to blankRoiImg
+                    blankRotatedImg.at<uchar>(i, j) = pixelGrayScaleValue;
+                }
             }
         }
-    threshold(blankRotatedImg, blankRotatedImg, 127, 255, CV_THRESH_BINARY);
-    imshow("HIC", blankRotatedImg);
+        withoutStaffLines = withoutStaffLines - blankRotatedImg;
+    }
+    threshold(withoutStaffLines, withoutStaffLines, 127, 255, CV_THRESH_BINARY_INV);
+    imshow(WTITLE_IMG_WO_STAFFLINES, withoutStaffLines);
     waitKey(0);
 }
 
