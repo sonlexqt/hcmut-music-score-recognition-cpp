@@ -298,6 +298,8 @@ void adaptiveRemoval()
         }
         withoutStaffLines = withoutStaffLines - blankRotatedImg;
     }
+    Mat dilateStructuringElement = getStructuringElement( MORPH_ELLIPSE, Size(2, 2));
+    dilate(withoutStaffLines, withoutStaffLines, dilateStructuringElement);
     threshold(withoutStaffLines, withoutStaffLines, 127, 255, CV_THRESH_BINARY_INV);
     imshow(WTITLE_IMG_WO_STAFFLINES, withoutStaffLines);
     waitKey(0);
