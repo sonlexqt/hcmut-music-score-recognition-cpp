@@ -298,10 +298,14 @@ void adaptiveRemoval()
         }
         withoutStaffLines = withoutStaffLines - blankRotatedImg;
     }
-    Mat dilateStructuringElement = getStructuringElement( MORPH_ELLIPSE, Size(2, 2));
+    Mat dilateStructuringElement = getStructuringElement( MORPH_ELLIPSE, Size(3, 3));
     dilate(withoutStaffLines, withoutStaffLines, dilateStructuringElement);
-//    threshold(withoutStaffLines, withoutStaffLines, 127, 255, CV_THRESH_BINARY_INV);
-//    imshow(WTITLE_IMG_WO_STAFFLINES, withoutStaffLines);
+    //threshold(withoutStaffLines, withoutStaffLines, 127, 255, CV_THRESH_BINARY_INV);
+    imshow(WTITLE_IMG_WO_STAFFLINES, withoutStaffLines);
+}
+
+void getConnectedComponents()
+{
     Mat labelImage = Mat(withoutStaffLines.size(), CV_32S);
     Mat stats, centroids;
     int nLabels = connectedComponentsWithStats(withoutStaffLines, labelImage, stats, centroids);
@@ -312,18 +316,19 @@ void adaptiveRemoval()
     {
         colors[label] = Vec3b((rand()&200), (rand()&200), (rand()&200));
     }
-//    // This part will put color for each connected component
-//    Mat dst = Mat(withoutStaffLines.size(), CV_8UC3);
-//    for (int r = 0; r < dst.rows; ++r)
-//    {
-//        for (int c = 0; c < dst.cols; ++c)
-//        {
-//            int label = labelImage.at<int>(r, c);
-//            Vec3b &pixel = dst.at<Vec3b>(r, c);
-//            pixel = colors[label];
-//        }
-//    }
+    //    // This part will put color for each connected component
+    //    Mat dst = Mat(withoutStaffLines.size(), CV_8UC3);
+    //    for (int r = 0; r < dst.rows; ++r)
+    //    {
+    //        for (int c = 0; c < dst.cols; ++c)
+    //        {
+    //            int label = labelImage.at<int>(r, c);
+    //            Vec3b &pixel = dst.at<Vec3b>(r, c);
+    //            pixel = colors[label];
+    //        }
+    //    }
     threshold(withoutStaffLines, withoutStaffLines, 127, 255, CV_THRESH_BINARY_INV);
+    //imshow("Connected components", withoutStaffLines);
     cvtColor(withoutStaffLines, withoutStaffLines, COLOR_GRAY2BGR);
     for (int i = 1; i < nLabels; i++)
     {
@@ -336,7 +341,7 @@ void adaptiveRemoval()
         Point p2(left + width, top + height);
         rectangle(withoutStaffLines, p1, p2, CV_RGB(255, 0, 0), 1, 8, 0);
     }
-    imshow("Connected components", withoutStaffLines);
+    imshow("Bounding boxes", withoutStaffLines);
     waitKey(0);
 }
 
@@ -350,5 +355,6 @@ int main()
     candidatePointsExtraction();
     rotationAngleEstimation();
     adaptiveRemoval();
+    getConnectedComponents();
     return 0;
 }
