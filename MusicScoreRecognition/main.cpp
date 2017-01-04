@@ -300,8 +300,9 @@ void adaptiveRemoval()
     }
     Mat dilateStructuringElement = getStructuringElement( MORPH_ELLIPSE, Size(3, 3));
     dilate(withoutStaffLines, withoutStaffLines, dilateStructuringElement);
-    //threshold(withoutStaffLines, withoutStaffLines, 127, 255, CV_THRESH_BINARY_INV);
+    threshold(withoutStaffLines, withoutStaffLines, 127, 255, CV_THRESH_BINARY_INV);
     imshow(WTITLE_IMG_WO_STAFFLINES, withoutStaffLines);
+    imwrite( "xin.jpg", withoutStaffLines );
 }
 
 void getConnectedComponents()
@@ -309,13 +310,13 @@ void getConnectedComponents()
     Mat labelImage = Mat(withoutStaffLines.size(), CV_32S);
     Mat stats, centroids;
     int nLabels = connectedComponentsWithStats(withoutStaffLines, labelImage, stats, centroids);
-    // Show connected components with random colors
-    vector<Vec3b> colors(nLabels);
-    colors[0] = Vec3b(0,0,0); // background
-    for (int label = 1; label < nLabels; ++label)
-    {
-        colors[label] = Vec3b((rand()&200), (rand()&200), (rand()&200));
-    }
+    // // Show connected components with random colors
+    // vector<Vec3b> colors(nLabels);
+    // colors[0] = Vec3b(0,0,0); // background
+    // for (int label = 1; label < nLabels; ++label)
+    // {
+    //    colors[label] = Vec3b((rand()&200), (rand()&200), (rand()&200));
+    // }
     //    // This part will put color for each connected component
     //    Mat dst = Mat(withoutStaffLines.size(), CV_8UC3);
     //    for (int r = 0; r < dst.rows; ++r)
@@ -328,7 +329,6 @@ void getConnectedComponents()
     //        }
     //    }
     threshold(withoutStaffLines, withoutStaffLines, 127, 255, CV_THRESH_BINARY_INV);
-    //imshow("Connected components", withoutStaffLines);
     cvtColor(withoutStaffLines, withoutStaffLines, COLOR_GRAY2BGR);
     for (int i = 1; i < nLabels; i++)
     {
